@@ -3,11 +3,16 @@ session_start();
 require_once 'database_connect.php';
 
 $errors = [];
+$location_name = '';
 
 function sanitize_input($data) {
     return htmlspecialchars(trim($data));
 }
 
+function get_image_url($location_name) {
+    $image_url = 'https://source.unsplash.com/300x200/?' . urlencode($location_name);
+    return $image_url;
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
@@ -33,8 +38,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (empty($errors)) {
-        $sql = "INSERT INTO Destinations (location_name, country_name, population, currency_type, description, display_name)
-                VALUES (:location_name, :country_name, :population, :currency_type, :description, :display_name)";
+        $image_url = get_image_url($location_name);
+
+        $sql = "INSERT INTO Destinations (location_name, country_name, population, currency_type, description, display_name, image_url)
+                VALUES (:location_name, :country_name, :population, :currency_type, :description, :display_name, :image_url)";
         $stmt = $db->prepare($sql);
 
         $stmt->bindParam(':location_name', $location_name);
@@ -43,9 +50,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(':currency_type', $currency_type);
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':display_name', $display_name);
+        $stmt->bindParam(':image_url', $image_url);
 
         if ($stmt->execute()) {
-            header('Location: destinations.php'); 
+            header('Location: destinations.php');
             exit;
         } else {
             $errors[] = "Error adding destination.";
@@ -59,7 +67,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <title>Add Destination</title>
     <script>
-        
         function focusInvalidField() {
             var errors = <?php echo json_encode($errors); ?>;
             if (errors.length > 0) {
@@ -85,7 +92,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <h2>Add New Destination</h2>
     <?php
-    
     if (!empty($errors)) {
         echo '<div style="color: red;">';
         foreach ($errors as $error) {
