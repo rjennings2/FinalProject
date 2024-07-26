@@ -2,7 +2,7 @@
 session_start();
 require_once 'database_connect.php';
 
-$sql = "SELECT * FROM Destinations ORDER BY created_at DESC";
+$sql = "SELECT * FROM Destinations ORDER BY location_name ASC, created_at DESC";
 try {
     $stmt = $db->query($sql);
     $destinations = $stmt->fetchAll(PDO::FETCH_ASSOC);
