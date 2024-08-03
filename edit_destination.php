@@ -130,4 +130,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <br>
     <a href="destinations.php">Back to Destinations</a>
 </body>
-</html>
+</html> 

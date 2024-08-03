@@ -10,7 +10,6 @@ try {
     echo "Error: " . $e->getMessage();
 }
 
-// Handle new comment submission
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['comment'])) {
     $location_id = $_POST['location_id'];
     $display_name = sanitize_input($_POST['display_name']);
@@ -25,12 +24,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['comment'])) {
         $stmt->bindParam(':comment', $comment);
 
         if ($stmt->execute()) {
-            // Redirect to avoid form resubmission
             header('Location: destinations.php');
             exit;
         } else {
             echo '<p style="color: red;">Error adding comment.</p>';
         }
+    }
+}
+
+if (isset($_GET['action']) && isset($_GET['comment_id'])) {
+    $comment_id = $_GET['comment_id'];
+    $action = $_GET['action'];
+
+    if ($action === 'delete') {
+        $sql = "UPDATE Comments SET is_deleted = TRUE WHERE comment_id = :comment_id";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':comment_id', $comment_id);
+    } elseif ($action === 'hide') {
+        $sql = "UPDATE Comments SET is_visible = FALSE WHERE comment_id = :comment_id";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':comment_id', $comment_id);
+    } elseif ($action === 'disemvowel') {
+        $sql = "UPDATE Comments SET comment = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(comment, 'a', ''), 'e', ''), 'i', ''), 'o', ''), 'u', ''), 'A', ''), 'E', ''), 'I', ''), 'O', ''), 'U', '') WHERE comment_id = :comment_id";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':comment_id', $comment_id);
+    } else {
+        echo '<p style="color: red;">Invalid action.</p>';
+    }
+
+    if ($stmt->execute()) {
+        header('Location: destinations.php');
+        exit;
+    } else {
+        echo '<p style="color: red;">Error processing comment action.</p>';
     }
 }
 
@@ -64,11 +90,7 @@ function get_image_url($location_name) {
     <script>
         function toggleDetails(id) {
             var details = document.getElementById(id);
-            if (details.style.display === 'none') {
-                details.style.display = 'block';
-            } else {
-                details.style.display = 'none';
-            }
+            details.style.display = details.style.display === 'none' ? 'block' : 'none';
         }
     </script>
 </head>
@@ -92,26 +114,30 @@ function get_image_url($location_name) {
                     <img src="https://source.unsplash.com/300x200/?<?php echo urlencode($destination['location_name']); ?>" 
                          alt="Image of <?php echo htmlspecialchars($destination['location_name']); ?>">
                     
-                    <!-- Comments Section -->
                     <div class="comments">
                         <h3>Comments</h3>
                         <?php
-                        // Fetch comments for the current destination
-                        $sql_comments = "SELECT * FROM Comments WHERE location_id = :location_id ORDER BY created_at DESC";
+                        $sql_comments = "SELECT * FROM Comments WHERE location_id = :location_id AND is_deleted = FALSE ORDER BY created_at DESC";
                         $stmt_comments = $db->prepare($sql_comments);
                         $stmt_comments->bindParam(':location_id', $destination['location_id']);
                         $stmt_comments->execute();
                         $comments = $stmt_comments->fetchAll(PDO::FETCH_ASSOC);
                         ?>
                         <?php foreach ($comments as $comment): ?>
-                            <div class="comment">
-                                <p><strong><?php echo htmlspecialchars($comment['display_name']); ?>:</strong></p>
-                                <p><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
-                                <p><small>Posted on: <?php echo htmlspecialchars($comment['created_at']); ?></small></p>
-                            </div>
+                            <?php if ($comment['is_visible']): ?>
+                                <div class="comment">
+                                    <p><strong><?php echo htmlspecialchars($comment['display_name']); ?>:</strong></p>
+                                    <p><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
+                                    <p><small>Posted on: <?php echo htmlspecialchars($comment['created_at']); ?></small></p>
+                                    <p>
+                                        <a href="destinations.php?action=hide&comment_id=<?php echo $comment['comment_id']; ?>">Hide</a> |
+                                        <a href="destinations.php?action=disemvowel&comment_id=<?php echo $comment['comment_id']; ?>">Disemvowel</a> |
+                                        <a href="destinations.php?action=delete&comment_id=<?php echo $comment['comment_id']; ?>">Delete</a>
+                                    </p>
+                                </div>
+                            <?php endif; ?>
                         <?php endforeach; ?>
                         
-                        <!-- Comment Form -->
                         <form action="destinations.php" method="POST">
                             <input type="hidden" name="location_id" value="<?php echo htmlspecialchars($destination['location_id']); ?>">
                             <label for="display_name">Your Name:</label>
