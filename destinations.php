@@ -2,6 +2,10 @@
 session_start();
 require_once 'database_connect.php';
 
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('Location: login.php');
+    exit;
+}
 
 $search_term = isset($_POST['search']) ? trim($_POST['search']) : '';
 
@@ -11,7 +15,7 @@ if ($search_term === '') {
 } else {
     $sql = "SELECT * FROM Destinations WHERE location_name LIKE :search_term ORDER BY location_name ASC, created_at DESC";
     $search_term_wildcard = "%$search_term%";
-}
+} 
 
 try {
     $stmt = $db->prepare($sql);
