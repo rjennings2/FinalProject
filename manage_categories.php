@@ -85,6 +85,7 @@ function sanitize_input($data) {
 <html>
 <head>
     <title>Manage Categories</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         .errors, .success {
             margin-bottom: 20px;

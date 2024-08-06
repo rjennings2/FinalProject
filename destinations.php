@@ -96,18 +96,13 @@ $categories = $stmt_categories->fetchAll(PDO::FETCH_ASSOC);
 <html>
 <head>
     <title>Destinations</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         .details {
             display: none;
             margin-top: 10px;
-        }
-        .comments {
-            margin-top: 10px;
             border-top: 1px solid #ddd;
             padding-top: 10px;
-        }
-        .comment {
-            margin-bottom: 10px;
         }
     </style>
     <script>
@@ -118,108 +113,110 @@ $categories = $stmt_categories->fetchAll(PDO::FETCH_ASSOC);
     </script>
 </head>
 <body>
-    <h2>List of Destinations</h2>
-    
-    <form method="POST" action="destinations.php">
-        <input type="text" name="search" placeholder="Search by location name" value="<?php echo htmlspecialchars($search_term); ?>">
-        <input type="submit" value="Search">
-    </form>
-
-    <?php if ($search_term !== ''): ?>
+    <div class="container">
+        <h2>List of Destinations</h2>
+        
         <form method="POST" action="destinations.php">
-            <input type="hidden" name="search" value="">
-            <input type="submit" value="View All Destinations">
+            <input type="text" name="search" placeholder="Search by location name" value="<?php echo htmlspecialchars($search_term); ?>">
+            <input type="submit" value="Search">
         </form>
-    <?php endif; ?>
 
-    <?php if (empty($destinations)): ?>
-        <p class="no-matches">No location matches.</p>
-    <?php else: ?>
-        <ul>
-            <?php foreach ($destinations as $destination): ?>
-                <li>
-                    <a href="javascript:void(0);" onclick="toggleDetails('details-<?php echo $destination['location_id']; ?>')">
-                        <?php echo htmlspecialchars($destination['location_name']); ?> (by <?php echo htmlspecialchars($destination['display_name']); ?>)
-                    </a>
-                    <div id="details-<?php echo $destination['location_id']; ?>" class="details">
-                        <p><strong>Location Name:</strong> <?php echo htmlspecialchars($destination['location_name']); ?></p>
-                        <p><strong>Country Name:</strong> <?php echo htmlspecialchars($destination['country_name']); ?></p>
-                        <p><strong>Population:</strong> <?php echo htmlspecialchars($destination['population']); ?></p>
-                        <p><strong>Currency Used:</strong> <?php echo htmlspecialchars($destination['currency_type']); ?></p>
-                        <p><strong>Description:</strong> <?php echo htmlspecialchars($destination['description']); ?></p>
-                        <p><strong>User:</strong> <?php echo htmlspecialchars($destination['display_name']); ?></p>
-                        <p><strong>Posted On:</strong> <?php echo htmlspecialchars($destination['created_at']); ?></p>
-                        <p><strong>Category:</strong> 
+        <?php if ($search_term !== ''): ?>
+            <form method="POST" action="destinations.php">
+                <input type="hidden" name="search" value="">
+                <input type="submit" value="View All Destinations">
+            </form>
+        <?php endif; ?>
 
-                        <?php
-                        $category_id = $destination['category_id'];
-                        $sql_category = "SELECT name FROM Categories WHERE id = :category_id";
-                        $stmt_category = $db->prepare($sql_category);
-                        $stmt_category->bindParam(':category_id', $category_id);
-                        $stmt_category->execute();
-                        $category = $stmt_category->fetch(PDO::FETCH_ASSOC);
+        <?php if (empty($destinations)): ?>
+            <p class="no-matches">No location matches.</p>
+        <?php else: ?>
+            <ul>
+                <?php foreach ($destinations as $destination): ?>
+                    <li>
+                        <a href="javascript:void(0);" onclick="toggleDetails('details-<?php echo $destination['location_id']; ?>')">
+                            <?php echo htmlspecialchars($destination['location_name']); ?> (by <?php echo htmlspecialchars($destination['display_name']); ?>)
+                        </a>
+                        <div id="details-<?php echo $destination['location_id']; ?>" class="details">
+                            <p><strong>Location Name:</strong> <?php echo htmlspecialchars($destination['location_name']); ?></p>
+                            <p><strong>Country Name:</strong> <?php echo htmlspecialchars($destination['country_name']); ?></p>
+                            <p><strong>Population:</strong> <?php echo htmlspecialchars($destination['population']); ?></p>
+                            <p><strong>Currency Used:</strong> <?php echo htmlspecialchars($destination['currency_type']); ?></p>
+                            <p><strong>Description:</strong> <?php echo htmlspecialchars($destination['description']); ?></p>
+                            <p><strong>User:</strong> <?php echo htmlspecialchars($destination['display_name']); ?></p>
+                            <p><strong>Posted On:</strong> <?php echo htmlspecialchars($destination['created_at']); ?></p>
+                            <p><strong>Category:</strong> 
 
-                        if ($category) {
-                            echo htmlspecialchars($category['name']);
-                        } else {
-                            echo 'Uncategorized';
-                        }
-                        ?>
-                        </p>
-
-                        <p><strong>Image:</strong></p>
-                        <img src="https://source.unsplash.com/300x200/?<?php echo urlencode($destination['location_name']); ?>" 
-                             alt="Image of <?php echo htmlspecialchars($destination['location_name']); ?>">
-                        
-                        <div class="comments">
-                            <h3>Comments</h3>
                             <?php
-                            $sql_comments = "SELECT * FROM Comments WHERE location_id = :location_id AND is_deleted = FALSE ORDER BY created_at DESC";
-                            $stmt_comments = $db->prepare($sql_comments);
-                            $stmt_comments->bindParam(':location_id', $destination['location_id']);
-                            $stmt_comments->execute();
-                            $comments = $stmt_comments->fetchAll(PDO::FETCH_ASSOC);
-                            ?>
-                            <?php foreach ($comments as $comment): ?>
-                                <?php if ($comment['is_visible']): ?>
-                                    <div class="comment">
-                                        <p><strong><?php echo htmlspecialchars($comment['display_name']); ?>:</strong></p>
-                                        <p><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
-                                        <p><small>Posted on: <?php echo htmlspecialchars($comment['created_at']); ?></small></p>
-                                        <p>
-                                            <a href="destinations.php?action=hide&comment_id=<?php echo $comment['comment_id']; ?>">Hide</a> |
-                                            <a href="destinations.php?action=disemvowel&comment_id=<?php echo $comment['comment_id']; ?>">Disemvowel</a> |
-                                            <a href="destinations.php?action=delete&comment_id=<?php echo $comment['comment_id']; ?>">Delete</a>
-                                        </p>
-                                    </div>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                            
-                            <form action="destinations.php" method="POST">
-                                <input type="hidden" name="location_id" value="<?php echo htmlspecialchars($destination['location_id']); ?>">
-                                <label for="display_name">Your Name:</label>
-                                <input type="text" id="display_name" name="display_name" required><br><br>
-                                <label for="comment">Your Comment:</label><br>
-                                <textarea id="comment" name="comment" rows="4" cols="50" required></textarea><br><br>
-                                <input type="submit" value="Submit Comment">
-                            </form>
-                        </div>
-                        
-                        <p>
-                            <a href="edit_destination.php?location_id=<?php echo htmlspecialchars($destination['location_id']); ?>">Edit</a> |
-                            <a href="delete_destination.php?location_id=<?php echo htmlspecialchars($destination['location_id']); ?>">Delete</a>
-                        </p>
-                    </div>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
+                            $category_id = $destination['category_id'];
+                            $sql_category = "SELECT name FROM Categories WHERE id = :category_id";
+                            $stmt_category = $db->prepare($sql_category);
+                            $stmt_category->bindParam(':category_id', $category_id);
+                            $stmt_category->execute();
+                            $category = $stmt_category->fetch(PDO::FETCH_ASSOC);
 
-    <br>
-    <a href="add.php">Add New Destination</a>
-    <br><br>
-    <a href="manage_categories.php">Manage Categories</a>
-    <br><br>
-    <a href="logout.php">Logout</a>
+                            if ($category) {
+                                echo htmlspecialchars($category['name']);
+                            } else {
+                                echo 'Uncategorized';
+                            }
+                            ?>
+                            </p>
+
+                            <p><strong>Image:</strong></p>
+                            <img src="https://source.unsplash.com/300x200/?<?php echo urlencode($destination['location_name']); ?>" 
+                                 alt="Image of <?php echo htmlspecialchars($destination['location_name']); ?>">
+                            
+                            <div class="comments">
+                                <h3>Comments</h3>
+                                <?php
+                                $sql_comments = "SELECT * FROM Comments WHERE location_id = :location_id AND is_deleted = FALSE ORDER BY created_at DESC";
+                                $stmt_comments = $db->prepare($sql_comments);
+                                $stmt_comments->bindParam(':location_id', $destination['location_id']);
+                                $stmt_comments->execute();
+                                $comments = $stmt_comments->fetchAll(PDO::FETCH_ASSOC);
+                                ?>
+                                <?php foreach ($comments as $comment): ?>
+                                    <?php if ($comment['is_visible']): ?>
+                                        <div class="comment">
+                                            <p><strong><?php echo htmlspecialchars($comment['display_name']); ?>:</strong></p>
+                                            <p><?php echo nl2br(htmlspecialchars($comment['comment'])); ?></p>
+                                            <p><small>Posted on: <?php echo htmlspecialchars($comment['created_at']); ?></small></p>
+                                            <p>
+                                                <a href="destinations.php?action=hide&comment_id=<?php echo $comment['comment_id']; ?>">Hide</a> |
+                                                <a href="destinations.php?action=disemvowel&comment_id=<?php echo $comment['comment_id']; ?>">Disemvowel</a> |
+                                                <a href="destinations.php?action=delete&comment_id=<?php echo $comment['comment_id']; ?>">Delete</a>
+                                            </p>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                                
+                                <form action="destinations.php" method="POST">
+                                    <input type="hidden" name="location_id" value="<?php echo htmlspecialchars($destination['location_id']); ?>">
+                                    <label for="display_name">Your Name:</label>
+                                    <input type="text" id="display_name" name="display_name" required><br><br>
+                                    <label for="comment">Your Comment:</label><br>
+                                    <textarea id="comment" name="comment" rows="4" cols="50" required></textarea><br><br>
+                                    <input type="submit" value="Submit Comment">
+                                </form>
+                            </div>
+                            
+                            <p>
+                                <a href="edit_destination.php?location_id=<?php echo htmlspecialchars($destination['location_id']); ?>">Edit</a> |
+                                <a href="delete_destination.php?location_id=<?php echo htmlspecialchars($destination['location_id']); ?>">Delete</a>
+                            </p>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+
+        <br>
+        <a href="add.php">Add New Destination</a>
+        <br><br>
+        <a href="manage_categories.php">Manage Categories</a>
+        <br><br>
+        <a href="logout.php">Logout</a>
+    </div>
 </body>
 </html>

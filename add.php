@@ -89,6 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html>
 <head>
     <title>Add Destination</title>
+    <link rel="stylesheet" href="styles.css">
     <script>
         function focusInvalidField() {
             var errors = <?php echo json_encode($errors); ?>;
@@ -113,39 +114,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </script>
 </head>
 <body>
-    <h2>Add New Destination</h2>
-    <?php
-    if (!empty($errors)) {
-        foreach ($errors as $error) {
-            echo '<p style="color: red;">' . htmlspecialchars($error) . '</p>';
+    <div class="container">
+        <h2>Add New Destination</h2>
+        <?php
+        if (!empty($errors)) {
+            foreach ($errors as $error) {
+                echo '<p class="errors">' . htmlspecialchars($error) . '</p>';
+            }
         }
-    }
-    ?>
-    <form action="add.php" method="POST">
-        <label for="display_name">Your Name:</label>
-        <input type="text" id="display_name" name="display_name" value="<?php echo htmlspecialchars($display_name ?? ''); ?>" required><br><br>
-        <label for="location_name">Location:</label>
-        <input type="text" id="location_name" name="location_name" value="<?php echo htmlspecialchars($location_name ?? ''); ?>" required><br><br>
-        <label for="country_name">Country:</label>
-        <input type="text" id="country_name" name="country_name" value="<?php echo htmlspecialchars($country_name ?? ''); ?>" required><br><br>
-        <label for="population">Population:</label>
-        <input type="number" id="population" name="population" min="1" value="<?php echo htmlspecialchars($population ?? ''); ?>"><br><br>
-        <label for="currency_type">Currency Used:</label>
-        <input type="text" id="currency_type" name="currency_type" value="<?php echo htmlspecialchars($currency_type ?? ''); ?>" required><br><br>
-        <label for="category_id">Category:</label>
-        <select id="category_id" name="category_id" required>
-            <option value="">Select a category</option>
-            <?php foreach ($categories as $category): ?>
-                <option value="<?php echo htmlspecialchars($category['id']); ?>">
-                    <?php echo htmlspecialchars($category['name']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select><br><br>
-        <label for="description">Description:</label><br>
-        <textarea id="description" name="description" rows="4" cols="50" required><?php echo htmlspecialchars($description ?? ''); ?></textarea><br><br>
-        <input type="submit" value="Submit">
-    </form>
-    <br>
-    <a href="destinations.php">Back to Destinations</a>
+        ?>
+        <form action="add.php" method="POST">
+            <label for="display_name">Your Name:</label>
+            <input type="text" id="display_name" name="display_name" value="<?php echo htmlspecialchars($display_name ?? ''); ?>" required><br><br>
+            <label for="location_name">Location:</label>
+            <input type="text" id="location_name" name="location_name" value="<?php echo htmlspecialchars($location_name ?? ''); ?>" required><br><br>
+            <label for="country_name">Country:</label>
+            <input type="text" id="country_name" name="country_name" value="<?php echo htmlspecialchars($country_name ?? ''); ?>" required><br><br>
+            <label for="population">Population:</label>
+            <input type="number" id="population" name="population" min="1" value="<?php echo htmlspecialchars($population ?? ''); ?>"><br><br>
+            <label for="currency_type">Currency Used:</label>
+            <input type="text" id="currency_type" name="currency_type" value="<?php echo htmlspecialchars($currency_type ?? ''); ?>" required><br><br>
+            <label for="category_id">Category:</label>
+            <select id="category_id" name="category_id" required>
+                <option value="">Select a category</option>
+                <?php foreach ($categories as $category): ?>
+                    <option value="<?php echo htmlspecialchars($category['id']); ?>">
+                        <?php echo htmlspecialchars($category['name']); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select><br><br>
+            <label for="description">Description:</label><br>
+            <textarea id="description" name="description" rows="4" cols="50" required><?php echo htmlspecialchars($description ?? ''); ?></textarea><br><br>
+            <input type="submit" value="Submit">
+        </form>
+        <br>
+        <a href="destinations.php">Back to Destinations</a>
+    </div>
 </body>
 </html>

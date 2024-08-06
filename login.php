@@ -39,34 +39,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>Login and Register</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Login Page</h2>
-    <?php if ($error) echo "<p style='color: red;'>$error</p>"; ?>
-    <?php if ($registration_success) echo "<p style='color: green;'>$registration_success</p>"; ?>
+    <div class="container">
+        <h2>Login Page</h2>
+        <?php if ($error) echo "<p class='errors'>$error</p>"; ?>
+        <?php if ($registration_success) echo "<p class='success'>$registration_success</p>"; ?>
 
-    <form action="login.php" method="POST">
-        <h3>Login</h3>
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br><br>
-        <input type="submit" name="login" value="Login">
-    </form>
+        <form action="login.php" method="POST">
+            <h3>Login</h3>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required><br><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br><br>
+            <input type="submit" name="login" value="Login">
+        </form>
 
-    <form action="login.php" method="POST">
-        <h3>Register</h3>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required><br><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br><br>
-        <label for="confirm_password">Confirm Password:</label>
-        <input type="password" id="confirm_password" name="confirm_password" required><br><br>
-        <input type="submit" name="register" value="Register">
-    </form>
+        <form action="login.php" method="POST">
+            <h3>Register</h3>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required><br><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br><br>
+            <label for="confirm_password">Confirm Password:</label>
+            <input type="password" id="confirm_password" name="confirm_password" required><br><br>
+            <input type="submit" name="register" value="Register">
+        </form>
+    </div>
 </body>
 </html>
