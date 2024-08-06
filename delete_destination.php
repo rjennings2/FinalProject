@@ -2,7 +2,7 @@
 session_start();
 require_once 'database_connect.php';
 
-define('ADMIN_LOGIN', 'manager');
+define('ADMIN_LOGIN', 'deletemanager');
 define('ADMIN_PASSWORD', 'mypass');
 
 if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])

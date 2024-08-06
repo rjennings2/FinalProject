@@ -15,7 +15,7 @@ if ($search_term === '') {
 } else {
     $sql = "SELECT * FROM Destinations WHERE location_name LIKE :search_term ORDER BY location_name ASC, created_at DESC";
     $search_term_wildcard = "%$search_term%";
-} 
+}
 
 try {
     $stmt = $db->prepare($sql);
@@ -34,8 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['comment'])) {
     $comment = sanitize_input($_POST['comment']);
 
     if (!empty($comment) && !empty($display_name)) {
-        $sql = "INSERT INTO Comments (location_id, display_name, comment)
-                VALUES (:location_id, :display_name, :comment)";
+        $sql = "INSERT INTO Comments (location_id, display_name, comment) VALUES (:location_id, :display_name, :comment)";
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':location_id', $location_id);
         $stmt->bindParam(':display_name', $display_name);
@@ -85,6 +84,12 @@ function sanitize_input($data) {
 function get_image_url($location_name) {
     return 'https://source.unsplash.com/300x200/?' . urlencode($location_name);
 }
+
+$sql_categories = "SELECT * FROM Categories ORDER BY name ASC";
+$stmt_categories = $db->prepare($sql_categories);
+$stmt_categories->execute();
+$categories = $stmt_categories->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -144,6 +149,24 @@ function get_image_url($location_name) {
                         <p><strong>Description:</strong> <?php echo htmlspecialchars($destination['description']); ?></p>
                         <p><strong>User:</strong> <?php echo htmlspecialchars($destination['display_name']); ?></p>
                         <p><strong>Posted On:</strong> <?php echo htmlspecialchars($destination['created_at']); ?></p>
+                        <p><strong>Category:</strong> 
+
+                        <?php
+                        $category_id = $destination['category_id'];
+                        $sql_category = "SELECT name FROM Categories WHERE id = :category_id";
+                        $stmt_category = $db->prepare($sql_category);
+                        $stmt_category->bindParam(':category_id', $category_id);
+                        $stmt_category->execute();
+                        $category = $stmt_category->fetch(PDO::FETCH_ASSOC);
+
+                        if ($category) {
+                            echo htmlspecialchars($category['name']);
+                        } else {
+                            echo 'Uncategorized';
+                        }
+                        ?>
+                        </p>
+
                         <p><strong>Image:</strong></p>
                         <img src="https://source.unsplash.com/300x200/?<?php echo urlencode($destination['location_name']); ?>" 
                              alt="Image of <?php echo htmlspecialchars($destination['location_name']); ?>">
@@ -194,6 +217,8 @@ function get_image_url($location_name) {
 
     <br>
     <a href="add.php">Add New Destination</a>
+    <br><br>
+    <a href="manage_categories.php">Manage Categories</a>
     <br><br>
     <a href="logout.php">Logout</a>
 </body>

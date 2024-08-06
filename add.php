@@ -2,7 +2,7 @@
 session_start();
 require_once 'database_connect.php';
 
-define('ADMIN_LOGIN', 'manager');
+define('ADMIN_LOGIN', 'createmanager');
 define('ADMIN_PASSWORD', 'mypass');
 
 if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])
@@ -20,6 +20,12 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 
 $errors = [];
 $location_name = '';
+$categories = [];
+
+$sql_categories = "SELECT * FROM Categories ORDER BY name ASC";
+$stmt_categories = $db->prepare($sql_categories);
+$stmt_categories->execute();
+$categories = $stmt_categories->fetchAll(PDO::FETCH_ASSOC);
 
 function sanitize_input($data) {
     return htmlspecialchars(trim($data));
@@ -31,13 +37,13 @@ function get_image_url($location_name) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    
     $display_name = sanitize_input($_POST['display_name']);
     $location_name = sanitize_input($_POST['location_name']);
     $country_name = sanitize_input($_POST['country_name']);
     $population = $_POST['population'];
     $currency_type = sanitize_input($_POST['currency_type']);
     $description = sanitize_input($_POST['description']);
+    $category_id = $_POST['category_id'];
 
     if (!is_numeric($population) || $population <= 0) {
         $errors[] = "Please enter a valid population number.";
@@ -56,8 +62,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($errors)) {
         $image_url = get_image_url($location_name);
 
-        $sql = "INSERT INTO Destinations (location_name, country_name, population, currency_type, description, display_name, image_url)
-                VALUES (:location_name, :country_name, :population, :currency_type, :description, :display_name, :image_url)";
+        $sql = "INSERT INTO Destinations (location_name, country_name, population, currency_type, description, display_name, image_url, category_id)
+                VALUES (:location_name, :country_name, :population, :currency_type, :description, :display_name, :image_url, :category_id)";
         $stmt = $db->prepare($sql);
 
         $stmt->bindParam(':location_name', $location_name);
@@ -67,6 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':display_name', $display_name);
         $stmt->bindParam(':image_url', $image_url);
+        $stmt->bindParam(':category_id', $category_id);
 
         if ($stmt->execute()) {
             header('Location: destinations.php');
@@ -125,6 +132,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="number" id="population" name="population" min="1" value="<?php echo htmlspecialchars($population ?? ''); ?>"><br><br>
         <label for="currency_type">Currency Used:</label>
         <input type="text" id="currency_type" name="currency_type" value="<?php echo htmlspecialchars($currency_type ?? ''); ?>" required><br><br>
+        <label for="category_id">Category:</label>
+        <select id="category_id" name="category_id" required>
+            <option value="">Select a category</option>
+            <?php foreach ($categories as $category): ?>
+                <option value="<?php echo htmlspecialchars($category['id']); ?>">
+                    <?php echo htmlspecialchars($category['name']); ?>
+                </option>
+            <?php endforeach; ?>
+        </select><br><br>
         <label for="description">Description:</label><br>
         <textarea id="description" name="description" rows="4" cols="50" required><?php echo htmlspecialchars($description ?? ''); ?></textarea><br><br>
         <input type="submit" value="Submit">
