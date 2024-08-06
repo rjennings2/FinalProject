@@ -2,6 +2,17 @@
 session_start();
 require_once 'database_connect.php';
 
+define('ADMIN_LOGIN', 'manager');
+define('ADMIN_PASSWORD', 'mypass');
+
+if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])
+    || ($_SERVER['PHP_AUTH_USER'] != ADMIN_LOGIN)
+    || ($_SERVER['PHP_AUTH_PW'] != ADMIN_PASSWORD)) {
+    header('HTTP/1.1 401 Unauthorized');
+    header('WWW-Authenticate: Basic realm="Protected Area"');
+    exit("Access Denied: Username and password required.");
+}
+
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header('Location: login.php');
     exit;
@@ -99,9 +110,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <?php
     if (!empty($errors)) {
         foreach ($errors as $error) {
-            echo '<p>' . htmlspecialchars($error) . '</p>';
+            echo '<p style="color: red;">' . htmlspecialchars($error) . '</p>';
         }
-        echo '</div>';
     }
     ?>
     <form action="add.php" method="POST">
